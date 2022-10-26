@@ -24,9 +24,16 @@ struct ContentView: View {
             Group {
                 HStack {
                     Text("True north:")
-                    Text(tracker.trueNorth.debugDescription)
+                    Text(tracker.trueNorth.description)
                 }
-               
+                HStack {
+                    Text("Bearing surfer:")
+                    Text(motor.bearingSurfer.description)
+                }
+                HStack {
+                    Text("Turndegrees:")
+                    Text(motor.turnDegrees.description)
+                }
             }
             
             Group {
@@ -35,14 +42,13 @@ struct ContentView: View {
                     Text("Bluetooth device:")
                     Text(motor.bleDevices)
                 }
-
-                Button("ask for bluetooth permission") {
-                    motor.startBluetooth()
+                
+                if !motor.bluetoothAllowed {
+                    Button("ask for bluetooth permission") {
+                        motor.startBluetooth()
+                    }
                 }
-                HStack {
-                    Text("Turndegrees:")
-                    Text(motor.turnDegrees.description)
-                }
+            
                 Link("API", destination: URL(string: "https://surftracker-365018.ew.r.appspot.com/")!)
             }
             Group {
@@ -63,7 +69,7 @@ struct ContentView: View {
                     }.onAppear { UIApplication.shared.isIdleTimerDisabled = true }
                     
                     //red means recording, blue means board
-                    let markers = [Marker(location: MapMarker(coordinate: CLLocationCoordinate2D(latitude:tracker.latitude , longitude:tracker.longitude ), tint: .blue)),Marker(location: MapMarker(coordinate: CLLocationCoordinate2D(latitude:tracker.cameraLatitude , longitude:tracker.cameraLongitude ), tint: .red))]
+                    let markers = [Marker(location: MapMarker(coordinate: CLLocationCoordinate2D(latitude:tracker.surferLatitude , longitude:tracker.surferLongitude ), tint: .blue)),Marker(location: MapMarker(coordinate: CLLocationCoordinate2D(latitude:tracker.cameraLatitude , longitude:tracker.cameraLongitude ), tint: .red))]
 
                     
                     Map(coordinateRegion:$tracker.region,annotationItems: markers){ marker in

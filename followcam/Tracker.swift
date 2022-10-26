@@ -20,8 +20,8 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var trueNorth = 0.0
     @Published var cameraLatitude = 0.0
     @Published var cameraLongitude = 0.0
-    @Published var latitude = 0.0 //surfer
-    @Published var longitude = 0.0 //surfer
+    @Published var surferLatitude = 0.0 //surfer
+    @Published var surferLongitude = 0.0 //surfer
     @Published var speed = 0.0
     @Published var course = 0.0
     @Published var serverResult = "no server result"
@@ -38,8 +38,6 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         
         locationManager = CLLocationManager()
         locationManager.pausesLocationUpdatesAutomatically = false
-        // TODO needs plist
-        //locationManager.allowsBackgroundLocationUpdates = true
         locationManager.activityType = CLActivityType.fitness
         shareLocationTimer = Timer()
         getLocationTimer = Timer()
@@ -54,8 +52,8 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
             cameraLatitude = locations.first?.coordinate.latitude ?? 0
             cameraLongitude = locations.first?.coordinate.longitude ?? 0
         }
-        latitude = locations.first?.coordinate.latitude ?? 0
-        longitude = locations.first?.coordinate.longitude ?? 0
+        surferLatitude = locations.first?.coordinate.latitude ?? 0
+        surferLongitude = locations.first?.coordinate.longitude ?? 0
         speed = locations.first?.speed ?? 0
         course = locations.first?.course ?? 0
     }
@@ -71,10 +69,8 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func locationManagerDidChangeAuthorization(_ manager : CLLocationManager ) {
-        print(manager.authorizationStatus)
-        //print("status changed - authorisationStatus:  \(manager.authorizationStatus) " )
+        
         if (manager.authorizationStatus == CLAuthorizationStatus.authorizedWhenInUse) {
-            print("authorized")
             locationAuthorized = true
             locationManager.startUpdatingLocation()
             locationManager.startUpdatingHeading()
@@ -105,7 +101,7 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     @objc func sendLocationToServerJSON() {
         
         let timesend = NSDate().timeIntervalSince1970
-        let parameters: [String: Any] = ["longitude": longitude, "latitude": latitude,"speed":speed,"course":course,"timesend":timesend]
+        let parameters: [String: Any] = ["longitude": surferLongitude, "latitude": surferLatitude,"speed":speed,"course":course,"timesend":timesend]
         let url = URL(string: "https://surftracker-365018.ew.r.appspot.com/setlocation")! 
 
         let session = URLSession.shared
@@ -137,12 +133,10 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     @objc func getLocationFromServer() {
-        print(simplecounter)
+        //print(simplecounter)
         simplecounter = simplecounter + 1
         
         let url = URL(string: "https://surftracker-365018.ew.r.appspot.com/getlocation")!
-//        var long = CLLocationDegrees()
-//        var lat = CLLocationDegrees()
         
         let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
 
@@ -159,10 +153,8 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
                         return
                     }
                     DispatchQueue.main.async {
-//                        long = obj["longitude"] as! CLLocationDegrees
-//                        lat = obj["latitude"] as! CLLocationDegrees
-                        self.latitude = obj["latitude"] as! CLLocationDegrees
-                        self.longitude = obj["longitude"] as! CLLocationDegrees
+                        self.surferLatitude = obj["latitude"] as! CLLocationDegrees
+                        self.surferLongitude = obj["longitude"] as! CLLocationDegrees
                     }
                 }
             }
@@ -170,18 +162,14 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
                 print(error.localizedDescription)
             }
 
-
             guard let data = data else { return }
             let result = (String(data: data, encoding: .utf8)!)
-            
-
             
             //queue needs to be done otherwise vieuw does not pickup the binding serverresult
             DispatchQueue.main.async {
                 self.serverResult = result
-                self.region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: self.latitude, longitude: self.longitude), span: MKCoordinateSpan(latitudeDelta: 0.002, longitudeDelta: 0.002))
+                self.region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: self.surferLatitude, longitude: self.surferLongitude), span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
             }
-            
 
         }
 
