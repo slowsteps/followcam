@@ -97,9 +97,13 @@ class Motor : NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheral
     
     
     func sendStringtoNano() {
-        print("trying to send teststring to nano: trueNorth: ")
+        print("trying to send teststring to nano: ")
    
-        let surfer = CGPoint(x:myTracker.surferLatitude,y:myTracker.surferLongitude)
+        print("myLatitude: \(myTracker.myLatitude)")
+        print("myLongitude: \(myTracker.myLongitude)")
+        print("surferLatitude: \(myTracker.surferLatitude)")
+        print("surferLongitude: \(myTracker.surferLongitude)")
+        
         turnDegrees =  getBearing() - myTracker.trueNorth
                 
         if(nano != nil) {
@@ -111,13 +115,11 @@ class Motor : NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheral
     
     func getBearing() -> CGFloat {
         
-        let pointA = CGPoint(x:myTracker.cameraLatitude,y:myTracker.cameraLongitude)
-        let pointB = CGPoint(x:myTracker.surferLatitude,y:myTracker.surferLongitude)
         
-        let lat1 = pointA.x.inRadians()
-        let lat2 = pointB.x.inRadians()
+        let lat1 = myTracker.myLatitude.inRadians()
+        let lat2 = myTracker.surferLatitude.inRadians()
 
-        let diffLong = (pointB.y - pointA.y).inRadians()
+        let diffLong = (myTracker.surferLongitude - myTracker.myLongitude).inRadians()
         
         let x = sin(diffLong) * cos(lat2)
         let y = cos(lat1) * sin(lat2) - (sin(lat1) * cos(lat2) * cos(diffLong))
@@ -125,9 +127,9 @@ class Motor : NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheral
         var initial_bearing = atan2(x, y)
 
         initial_bearing = initial_bearing.inDegrees()
-        
+
         bearingSurfer = (initial_bearing + 360).truncatingRemainder(dividingBy: 360)
-       
+        
 
         return(bearingSurfer)
     }
@@ -145,24 +147,7 @@ class Motor : NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheral
         centralManager.scanForPeripherals(withServices: nil,options: nil)
     }
  
-    func heading() -> CGFloat {
-        let lat1 = myTracker.cameraLatitude.inRadians()
-        let lon1 = myTracker.cameraLongitude.inRadians()
-
-        let lat2 = myTracker.surferLatitude.inRadians()
-        let lon2 = myTracker.surferLongitude.inRadians()
-
-        let dLon = lon2 - lon1
-        let y = sin(dLon) * cos(lat2)
-        let x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon)
-
-        let headingDegrees = atan2(y, x).inDegrees()
-        if headingDegrees >= 0 {
-            return headingDegrees
-        } else {
-            return headingDegrees + 360
-        }
-    }
+    
     
 }
 

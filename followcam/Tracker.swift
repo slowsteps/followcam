@@ -18,10 +18,13 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var counter = 1.0
     @Published var magneticHeading = 0.0
     @Published var trueNorth = 0.0
-    @Published var cameraLatitude = 0.0
-    @Published var cameraLongitude = 0.0
-    @Published var surferLatitude = 0.0 //surfer
-    @Published var surferLongitude = 0.0 //surfer
+    public var myLatitude = 0.0
+    public var myLongitude = 0.0
+    public var cameraLatitude = 1.0
+    public var cameraLongitude = 1.0
+    public var surferLatitude = 0.0
+    public var surferLongitude = 0.0
+    public var cloudLocation = serverLocation()
     @Published var speed = 0.0
     @Published var course = 0.0
     @Published var serverResult = "no server result"
@@ -43,19 +46,59 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         getLocationTimer = Timer()
         super.init()
         locationManager.delegate = self
-
+        
+        Task {
+            try await getLocation()
+        }
+        
+        
+        
     }
     
+    struct serverLocation: Codable {
+        var latitude: Double = -1
+        var longitude: Double = -1
+        var speed: Double = -1
+        var course: Double = -1
+        var timesend: Double = -1
+    }
+    
+    @objc func getDataFromCloud() {
+        Task {
+            try await getLocation()
+        }
+    }
+    
+    func getLocation() async throws {
+        let url = URL(string: "https://surftracker-365018.ew.r.appspot.com/getlocation")!
+        let urlRequest = URLRequest(url: url)
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else { fatalError("Error while fetching data") }
+        let decodedJson = try JSONDecoder().decode(serverLocation.self, from: data)
+        
+        surferLatitude = decodedJson.latitude
+        surferLongitude = decodedJson.longitude
+        print(decodedJson.timesend)
+        
+        DispatchQueue.main.async {
+            self.serverResult = decodedJson.timesend.description
+            self.region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: self.surferLatitude, longitude: self.surferLongitude), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+        }
+        
+        //update camera loc as well
+        cameraLatitude = myLatitude
+        cameraLongitude = myLongitude
+
+        
+    }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if (modeIsCamera) {
-            cameraLatitude = locations.first?.coordinate.latitude ?? 0
-            cameraLongitude = locations.first?.coordinate.longitude ?? 0
-        }
-        surferLatitude = locations.first?.coordinate.latitude ?? 0
-        surferLongitude = locations.first?.coordinate.longitude ?? 0
-        speed = locations.first?.speed ?? 0
-        course = locations.first?.course ?? 0
+        
+        self.myLatitude = locations.first?.coordinate.latitude ?? 0
+        self.myLongitude = locations.first?.coordinate.longitude ?? 0
+            speed = locations.first?.speed ?? 0
+            course = locations.first?.course ?? 0
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
@@ -80,7 +123,7 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func toggleLocationSending( _ isSurfer : Bool) {
         if (isSurfer) {
-            shareLocationTimer  = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(sendLocationToServerJSON),userInfo: nil, repeats: true)
+            shareLocationTimer  = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(sendLocationToServer),userInfo: nil, repeats: true)
         }
         else {
             shareLocationTimer.invalidate()
@@ -89,7 +132,7 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func toggleLocationGetting( _ isCamera : Bool) {
         if (isCamera) {
-            getLocationTimer  = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(getLocationFromServer),userInfo: nil, repeats: true)
+            getLocationTimer  = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(getDataFromCloud),userInfo: nil, repeats: true)
             modeIsCamera = true
         }
         else {
@@ -98,10 +141,10 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    @objc func sendLocationToServerJSON() {
+    @objc func sendLocationToServer() {
         
         let timesend = NSDate().timeIntervalSince1970
-        let parameters: [String: Any] = ["longitude": surferLongitude, "latitude": surferLatitude,"speed":speed,"course":course,"timesend":timesend]
+        let parameters: [String: Any] = ["longitude": myLongitude, "latitude": myLatitude,"speed":speed,"course":course,"timesend":timesend]
         let url = URL(string: "https://surftracker-365018.ew.r.appspot.com/setlocation")! 
 
         let session = URLSession.shared
@@ -132,49 +175,9 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         
     }
     
-    @objc func getLocationFromServer() {
-        //print(simplecounter)
-        simplecounter = simplecounter + 1
-        
-        let url = URL(string: "https://surftracker-365018.ew.r.appspot.com/getlocation")!
-        
-        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+  
+    
 
-            if let error = error {
-              print("Request Error: \(error.localizedDescription)")
-              return
-            }
-            
-            do {
-                let json = try JSONSerialization.jsonObject(with: data!, options: [])
-                if let obj = json as? [String: Any] {
-                    if obj["longitude"] == nil {
-                        print("no locations available")
-                        return
-                    }
-                    DispatchQueue.main.async {
-                        self.surferLatitude = obj["latitude"] as! CLLocationDegrees
-                        self.surferLongitude = obj["longitude"] as! CLLocationDegrees
-                    }
-                }
-            }
-            catch {
-                print(error.localizedDescription)
-            }
-
-            guard let data = data else { return }
-            let result = (String(data: data, encoding: .utf8)!)
-            
-            //queue needs to be done otherwise vieuw does not pickup the binding serverresult
-            DispatchQueue.main.async {
-                self.serverResult = result
-                self.region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: self.surferLatitude, longitude: self.surferLongitude), span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
-            }
-
-        }
-
-        task.resume()
-    }
     
  
     

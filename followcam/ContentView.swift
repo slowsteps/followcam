@@ -6,7 +6,7 @@ struct ContentView: View {
     @StateObject var tracker = Tracker()
     @StateObject var motor = Motor ()
     @State private var msgfornano: String = "1"
-    @State private var isSurfer = false
+    @State public var isSurfer = false
     @State public var isCamera = false
     
     
@@ -24,15 +24,16 @@ struct ContentView: View {
             Group {
                 HStack {
                     Text("True north:")
-                    Text(tracker.trueNorth.description)
+                    Text(String(format: "%.1f", tracker.trueNorth))
+                    
                 }
                 HStack {
                     Text("Bearing surfer:")
-                    Text(motor.bearingSurfer.description)
+                    Text(String(format: "%.1f", motor.bearingSurfer))
                 }
                 HStack {
                     Text("Turndegrees:")
-                    Text(motor.turnDegrees.description)
+                    Text(String(format: "%.1f", motor.turnDegrees))
                 }
             }
             
@@ -59,12 +60,12 @@ struct ContentView: View {
         
                 if tracker.locationAuthorized {
                 
-                    Toggle("share location",isOn: $isSurfer).padding().onChange(of: isSurfer) { newValue in
+                    Toggle("Start surfer",isOn: $isSurfer).padding().onChange(of: isSurfer) { newValue in
                         tracker.toggleLocationSending(newValue)
                     }.onAppear { UIApplication.shared.isIdleTimerDisabled = true }
                     
 
-                    Toggle("get location",isOn: $isCamera).padding().onChange(of: isCamera) { newValue in
+                    Toggle("Start camera",isOn: $isCamera).padding().onChange(of: isCamera) { newValue in
                         tracker.toggleLocationGetting(newValue)
                     }.onAppear { UIApplication.shared.isIdleTimerDisabled = true }
                     
