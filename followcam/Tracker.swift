@@ -15,8 +15,7 @@ import MapKit
 class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     
     
-    @Published var counter = 1.0
-    @Published var magneticHeading = 0.0
+    
     @Published var trueNorth = 0.0
     public var myLatitude = 0.0
     public var myLongitude = 0.0
@@ -24,18 +23,19 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     public var cameraLongitude = 1.0
     public var surferLatitude = 0.0
     public var surferLongitude = 0.0
-    public var cloudLocation = serverLocation()
     @Published var speed = 0.0
     @Published var course = 0.0
     @Published var serverResult = "no server result"
     @Published var locationAuthorized = false
     private let locationManager : CLLocationManager
-    public var myMotor : Motor?
+    @Published var bearingSurfer : CGFloat = 0
+    @Published var turnDegrees : CGFloat = 0
     private var shareLocationTimer : Timer
     private var getLocationTimer : Timer
     @Published var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 51.507222, longitude: -0.1275), span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5))
     private var simplecounter = 0
     private var modeIsCamera = false
+    
     
     override init() {
         
@@ -45,11 +45,11 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         shareLocationTimer = Timer()
         getLocationTimer = Timer()
         super.init()
+        
         locationManager.delegate = self
         
-        Task {
-            try await getLocation()
-        }
+        
+        print("Tracker init done")
         
         
         
@@ -63,6 +63,11 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         var timesend: Double = -1
     }
     
+    class myState : ObservableObject{
+        var test = "hoi"
+    }
+    
+    
     @objc func getDataFromCloud() {
         Task {
             try await getLocation()
@@ -70,6 +75,9 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func getLocation() async throws {
+        
+        print("getLocation cloud download")
+        
         let url = URL(string: "https://surftracker-365018.ew.r.appspot.com/getlocation")!
         let urlRequest = URLRequest(url: url)
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
@@ -83,26 +91,27 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         
         DispatchQueue.main.async {
             self.serverResult = decodedJson.timesend.description
-            self.region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: self.surferLatitude, longitude: self.surferLongitude), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
         }
         
         //update camera loc as well
         cameraLatitude = myLatitude
         cameraLongitude = myLongitude
 
-        
+        //update TurnDegrees
+        updateBearing()
+     
+        myMainMotor.turnMotor()
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
         self.myLatitude = locations.first?.coordinate.latitude ?? 0
         self.myLongitude = locations.first?.coordinate.longitude ?? 0
-            speed = locations.first?.speed ?? 0
-            course = locations.first?.course ?? 0
+        speed = locations.first?.speed ?? 0
+        course = locations.first?.course ?? 0
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        magneticHeading = newHeading.magneticHeading
         trueNorth = newHeading.trueHeading
     }
     
@@ -122,17 +131,26 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func toggleLocationSending( _ isSurfer : Bool) {
+        print("toggle setting")
         if (isSurfer) {
-            shareLocationTimer  = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(sendLocationToServer),userInfo: nil, repeats: true)
+            shareLocationTimer  = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(sendLocationToServer),userInfo: nil, repeats: true)
         }
         else {
             shareLocationTimer.invalidate()
         }
     }
     
+    func centerMap() {
+        
+        region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: myLatitude, longitude: myLongitude), span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
+    }
+    
     func toggleLocationGetting( _ isCamera : Bool) {
+        print("toggle getting")
         if (isCamera) {
-            getLocationTimer  = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(getDataFromCloud),userInfo: nil, repeats: true)
+            centerMap()
+            
+            getLocationTimer  = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(getDataFromCloud),userInfo: nil, repeats: true)
             modeIsCamera = true
         }
         else {
@@ -171,15 +189,33 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
           }
           task.resume()
         
-        
-        
     }
     
-  
-    
+    //get angle from camera to surfer measure as degree from north
+    func updateBearing() {
+        print("in update bearing")
+        let lat1 = myLatitude.inRadians()
+        let lat2 = surferLatitude.inRadians()
+
+        let diffLong = (surferLongitude - myLongitude).inRadians()
+        
+        let x = sin(diffLong) * cos(lat2)
+        let y = cos(lat1) * sin(lat2) - (sin(lat1) * cos(lat2) * cos(diffLong))
+        
+//        var initial_bearing = atan2(x, y)
+//        initial_bearing = initial_bearing.inDegrees()
+        DispatchQueue.main.async {
+            self.bearingSurfer = (atan2(x,y).inDegrees() + 360).truncatingRemainder(dividingBy: 360)
+            //bearingSurfer = (initial_bearing + 360).truncatingRemainder(dividingBy: 360)
+            self.turnDegrees =  self.bearingSurfer - self.trueNorth
+        }
+    }
 
     
- 
+    func getTurnDegrees() -> CGFloat {
+        print("getting turnDegrees \(turnDegrees)")
+        return turnDegrees
+    }
     
     
     

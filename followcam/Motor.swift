@@ -19,14 +19,16 @@ class Motor : NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheral
     var nano : CBPeripheral!
     var characteristicTurnMotor : CBCharacteristic!
     var characteristicDegree : CBCharacteristic!
-    public var myTracker : Tracker = Tracker()
+    public var myTracker : Tracker
     @Published var turnDegrees : CGFloat = 0
-    @Published var bearingSurfer : CGFloat = 0
+//    @Published var bearingSurfer : CGFloat = 0
     @Published var bluetoothAllowed = false
     
     override init() {
+        myTracker = myMainTracker
         super.init()
         startBluetooth()
+        print("Motor init done")
     }
     
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
@@ -96,43 +98,13 @@ class Motor : NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheral
     }
     
     
-    func sendStringtoNano() {
-        print("trying to send teststring to nano: ")
-   
-        print("myLatitude: \(myTracker.myLatitude)")
-        print("myLongitude: \(myTracker.myLongitude)")
-        print("surferLatitude: \(myTracker.surferLatitude)")
-        print("surferLongitude: \(myTracker.surferLongitude)")
-        
-        turnDegrees =  getBearing() - myTracker.trueNorth
-                
+    func turnMotor() {
+        print("trying to send to nano")
         if(nano != nil) {
-            nano.writeValue((turnDegrees.description.data(using: String.Encoding.utf8)!), for: characteristicDegree, type: .withResponse)
+            nano.writeValue((myMainTracker.getTurnDegrees().description.data(using: String.Encoding.utf8)!), for: characteristicDegree, type: .withResponse)
         }
     }
     
-
-    
-    func getBearing() -> CGFloat {
-        
-        
-        let lat1 = myTracker.myLatitude.inRadians()
-        let lat2 = myTracker.surferLatitude.inRadians()
-
-        let diffLong = (myTracker.surferLongitude - myTracker.myLongitude).inRadians()
-        
-        let x = sin(diffLong) * cos(lat2)
-        let y = cos(lat1) * sin(lat2) - (sin(lat1) * cos(lat2) * cos(diffLong))
-
-        var initial_bearing = atan2(x, y)
-
-        initial_bearing = initial_bearing.inDegrees()
-
-        bearingSurfer = (initial_bearing + 360).truncatingRemainder(dividingBy: 360)
-        
-
-        return(bearingSurfer)
-    }
     
     func startBluetooth() {
         print("trying to start bluetooth")

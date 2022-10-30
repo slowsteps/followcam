@@ -1,30 +1,30 @@
 import SwiftUI
 
+var myMainTracker = Tracker()
+var myMainMotor = Motor()
+
+
 @main
+
 
 
 struct MyApp: App {
     
     
-    public var myTracker : Tracker
-    public var myMotor : Motor
-    
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-    }
     
     init() {
         
         
-        myTracker = Tracker()
-        myMotor = Motor()
-        myTracker.myMotor = myMotor
-        myMotor.myTracker = myTracker
+//        myMainTracker = Tracker()
+//        myMainMotor = Motor()
         
     }
     
+    var body: some Scene {
+        WindowGroup {
+            ContentView(amotor: myMainMotor, atracker: myMainTracker)
+        }
+    }
 
     
 }

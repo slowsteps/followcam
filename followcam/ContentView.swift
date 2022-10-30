@@ -3,8 +3,8 @@ import CoreLocation
 import MapKit
 
 struct ContentView: View {
-    @StateObject var tracker = Tracker()
-    @StateObject var motor = Motor ()
+    @ObservedObject private var tracker : Tracker
+    private var motor : Motor
     @State private var msgfornano: String = "1"
     @State public var isSurfer = false
     @State public var isCamera = false
@@ -15,6 +15,11 @@ struct ContentView: View {
         var location: MapMarker
     }
     
+    init(amotor myMotor:Motor,atracker myTracker:Tracker) {
+        tracker = myTracker
+        motor = myMotor
+        print("content view init done")
+    }
     
     var body: some View {
         
@@ -29,11 +34,11 @@ struct ContentView: View {
                 }
                 HStack {
                     Text("Bearing surfer:")
-                    Text(String(format: "%.1f", motor.bearingSurfer))
+                    Text(String(format: "%.1f", tracker.bearingSurfer))
                 }
                 HStack {
                     Text("Turndegrees:")
-                    Text(String(format: "%.1f", motor.turnDegrees))
+                    Text(String(format: "%.1f", tracker.turnDegrees))
                 }
             }
             
@@ -55,7 +60,7 @@ struct ContentView: View {
             Group {
                 
                 Button("Send msg to nano") {
-                    motor.sendStringtoNano()
+                    motor.turnMotor()
                 }.padding()
         
                 if tracker.locationAuthorized {
@@ -73,7 +78,7 @@ struct ContentView: View {
                     let markers = [Marker(location: MapMarker(coordinate: CLLocationCoordinate2D(latitude:tracker.surferLatitude , longitude:tracker.surferLongitude ), tint: .blue)),Marker(location: MapMarker(coordinate: CLLocationCoordinate2D(latitude:tracker.cameraLatitude , longitude:tracker.cameraLongitude ), tint: .red))]
 
                     
-                    Map(coordinateRegion:$tracker.region,annotationItems: markers){ marker in
+                    Map(coordinateRegion:$tracker.region,interactionModes: MapInteractionModes.all,annotationItems: markers){ marker in
                         marker.location
                     }.frame(width:400,height:200)
                     
