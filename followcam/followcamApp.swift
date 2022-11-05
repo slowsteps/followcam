@@ -22,7 +22,25 @@ struct MyApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView(amotor: myMainMotor, atracker: myMainTracker)
+            
+            
+            
+            NavigationView {
+                List {
+                    NavigationLink("tracker") {
+                        ContentView(amotor: myMainMotor, atracker: myMainTracker)
+                    }
+                    
+                    NavigationLink("video") {
+                        RecordingView()
+                    }
+
+                }
+                
+            }
+            
+            
+
         }
     }
 

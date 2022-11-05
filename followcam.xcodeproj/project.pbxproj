@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D019ADBC29130469005D5863 /* VideoCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D019ADBB29130469005D5863 /* VideoCaptureView.swift */; };
+		D081D73E291473F60035374F /* Asset 10.png in Resources */ = {isa = PBXBuildFile; fileRef = D081D73D291473F60035374F /* Asset 10.png */; };
+		D081D740291475C90035374F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D081D73F291475C90035374F /* ContentView.swift */; };
 		D0EC8AE529084DF6006DAA96 /* followcamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC8AE429084DF6006DAA96 /* followcamApp.swift */; };
-		D0EC8AE729084DF6006DAA96 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC8AE629084DF6006DAA96 /* ContentView.swift */; };
 		D0EC8AE929084DF8006DAA96 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0EC8AE829084DF8006DAA96 /* Assets.xcassets */; };
 		D0EC8AEC29084DF8006DAA96 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0EC8AEB29084DF8006DAA96 /* Preview Assets.xcassets */; };
 		D0EC8AF429086C07006DAA96 /* Motor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC8AF229086C07006DAA96 /* Motor.swift */; };
@@ -16,9 +18,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D019ADBB29130469005D5863 /* VideoCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCaptureView.swift; sourceTree = "<group>"; };
+		D081D73C29146A800035374F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D081D73D291473F60035374F /* Asset 10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Asset 10.png"; sourceTree = SOURCE_ROOT; };
+		D081D73F291475C90035374F /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = ../../../.Trash/ContentView.swift; sourceTree = "<group>"; };
 		D0EC8AE129084DF6006DAA96 /* followcam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = followcam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0EC8AE429084DF6006DAA96 /* followcamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = followcamApp.swift; sourceTree = "<group>"; };
-		D0EC8AE629084DF6006DAA96 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D0EC8AE829084DF8006DAA96 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D0EC8AEB29084DF8006DAA96 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D0EC8AF229086C07006DAA96 /* Motor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Motor.swift; sourceTree = "<group>"; };
@@ -55,10 +60,12 @@
 		D0EC8AE329084DF6006DAA96 /* followcam */ = {
 			isa = PBXGroup;
 			children = (
+				D081D73C29146A800035374F /* Info.plist */,
 				D0EC8AE429084DF6006DAA96 /* followcamApp.swift */,
+				D081D73F291475C90035374F /* ContentView.swift */,
 				D0EC8AF229086C07006DAA96 /* Motor.swift */,
 				D0EC8AF329086C07006DAA96 /* Tracker.swift */,
-				D0EC8AE629084DF6006DAA96 /* ContentView.swift */,
+				D019ADBB29130469005D5863 /* VideoCaptureView.swift */,
 				D0EC8AE829084DF8006DAA96 /* Assets.xcassets */,
 				D0EC8AEA29084DF8006DAA96 /* Preview Content */,
 			);
@@ -68,6 +75,7 @@
 		D0EC8AEA29084DF8006DAA96 /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
+				D081D73D291473F60035374F /* Asset 10.png */,
 				D0EC8AEB29084DF8006DAA96 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
@@ -131,6 +139,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D081D73E291473F60035374F /* Asset 10.png in Resources */,
 				D0EC8AEC29084DF8006DAA96 /* Preview Assets.xcassets in Resources */,
 				D0EC8AE929084DF8006DAA96 /* Assets.xcassets in Resources */,
 			);
@@ -144,7 +153,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0EC8AF529086C07006DAA96 /* Tracker.swift in Sources */,
-				D0EC8AE729084DF6006DAA96 /* ContentView.swift in Sources */,
+				D081D740291475C90035374F /* ContentView.swift in Sources */,
+				D019ADBC29130469005D5863 /* VideoCaptureView.swift in Sources */,
 				D0EC8AF429086C07006DAA96 /* Motor.swift in Sources */,
 				D0EC8AE529084DF6006DAA96 /* followcamApp.swift in Sources */,
 			);
@@ -278,9 +288,14 @@
 				DEVELOPMENT_TEAM = TW9F2F5PGW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = followcam/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "surftracker needs bluetooth to connect with the motor";
+				INFOPLIST_KEY_NSCameraUsageDescription = "surftracker needs the camera to record video";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "surftracker uses GPS data to point the camera";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "surtracker needs to store movies in the camera roll";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "surftracker needs access to photos";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -311,9 +326,14 @@
 				DEVELOPMENT_TEAM = TW9F2F5PGW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = followcam/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "surftracker needs bluetooth to connect with the motor";
+				INFOPLIST_KEY_NSCameraUsageDescription = "surftracker needs the camera to record video";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "surftracker uses GPS data to point the camera";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "surtracker needs to store movies in the camera roll";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "surftracker needs access to photos";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
