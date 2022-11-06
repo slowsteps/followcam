@@ -7,20 +7,16 @@ struct RecordingView: View {
     @State private var timer = 5
     @State private var onComplete = false
     @State private var recording = false
-    @State private var isStop = false
     
     var body: some View {
         ZStack {
 
-            //VideoRecordingView(timeLeft: $timer, onComplete: $onComplete, recording: $recording, isStop: $isStop)
+            
             VStack {
-                Button("⏺️ start recording") {
-                    recording = true
-                }.padding()
-                Button("⏹️ stop recording") {
-                    isStop = true
-                }
-                VideoRecordingView(timeLeft: $timer, onComplete: $onComplete, recording: $recording, isStop: $isStop)
+
+                Toggle("Record video", isOn: $recording).padding()
+                
+                VideoRecordingView(timeLeft: $timer, onComplete: $onComplete, recording: $recording)
             }
 
         }
@@ -40,17 +36,17 @@ struct VideoRecordingView: UIViewRepresentable {
     @Binding var timeLeft: Int
     @Binding var onComplete: Bool
     @Binding var recording: Bool
-    @Binding var isStop: Bool
+    
     
     func makeUIView(context: UIViewRepresentableContext<VideoRecordingView>) -> PreviewView {
         let recordingView = PreviewView()
-        
         return recordingView
     }
     
     func updateUIView(_ uiViewController: PreviewView, context: UIViewRepresentableContext<VideoRecordingView>) {
         print("updateUIView recording: \(recording)")
-        if isStop { uiViewController.stopRecordingNow()}
+        
+        if !recording { uiViewController.stopRecordingNow()}
         if recording { uiViewController.startRecording()}
     }
 
@@ -162,27 +158,33 @@ class PreviewView: UIView {
         
         if nil != self.superview {
             self.videoPreviewLayer.session = self.captureSession
-            self.videoPreviewLayer.videoGravity = .resizeAspect
+            self.videoPreviewLayer.videoGravity = .resizeAspectFill
             self.captureSession?.startRunning()
             self.captureSession?.addOutput(videoFileOutput)
-            //startRecording()
+        
         } else {
             self.captureSession?.stopRunning()
         }
     }
     
-    
+    func setupSession() {
+        recordingDelegate = self
+        self.videoPreviewLayer.session = self.captureSession
+        self.videoPreviewLayer.videoGravity = .resizeAspect
+        self.captureSession?.startRunning()
+        self.captureSession?.addOutput(videoFileOutput)
+    }
     
     public func stopRecordingNow() {
-        print("trying to stopped recording")
+        print("trying to stop recording")
+        
         videoFileOutput.stopRecording()
+        
     }
     
     
-    func startRecording(){
+    func startRecording() {
         print("startrecording")
-        //captureSession?.addOutput(videoFileOutput)
-        
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let filePath = documentsURL.appendingPathComponent("capture.mp4")
         

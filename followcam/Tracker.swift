@@ -133,7 +133,7 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     func toggleLocationSending( _ isSurfer : Bool) {
         print("toggle setting")
         if (isSurfer) {
-            shareLocationTimer  = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(sendLocationToServer),userInfo: nil, repeats: true)
+            shareLocationTimer  = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(sendLocationToServer),userInfo: nil, repeats: true)
         }
         else {
             shareLocationTimer.invalidate()

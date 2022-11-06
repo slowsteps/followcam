@@ -97,6 +97,10 @@ class Motor : NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheral
             }
     }
     
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        print("peripheral disconnected")
+        startBluetooth()
+    }
     
     func turnMotor() {
         print("trying to send to nano")

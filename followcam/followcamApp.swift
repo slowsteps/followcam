@@ -14,30 +14,26 @@ struct MyApp: App {
     
     init() {
         
-        
-//        myMainTracker = Tracker()
-//        myMainMotor = Motor()
-        
     }
     
     var body: some Scene {
         WindowGroup {
             
+            ContentView(amotor: myMainMotor, atracker: myMainTracker)
             
-            
-            NavigationView {
-                List {
-                    NavigationLink("tracker") {
-                        ContentView(amotor: myMainMotor, atracker: myMainTracker)
-                    }
-                    
-                    NavigationLink("video") {
-                        RecordingView()
-                    }
-
-                }
-                
-            }
+//            NavigationView {
+//                List {
+//                    NavigationLink("tracker") {
+//                        ContentView(amotor: myMainMotor, atracker: myMainTracker)
+//                    }
+//
+//                    NavigationLink("video") {
+//                        RecordingView()
+//                    }
+//
+//                }
+//
+//            }
             
             
 
