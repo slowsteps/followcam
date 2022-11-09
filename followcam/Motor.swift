@@ -102,10 +102,11 @@ class Motor : NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheral
         startBluetooth()
     }
     
-    func turnMotor() {
-        print("trying to send to nano")
+    func turnMotor(inTurnDegrees:CGFloat) {
+        print("trying to send to nano: \(inTurnDegrees)")
         if(nano != nil) {
-            nano.writeValue((myMainTracker.getTurnDegrees().description.data(using: String.Encoding.utf8)!), for: characteristicDegree, type: .withResponse)
+            //nano.writeValue((myMainTracker.getTurnDegrees().description.data(using: String.Encoding.utf8)!), for: characteristicDegree, type: .withResponse)
+            nano.writeValue((inTurnDegrees.description.data(using: String.Encoding.utf8)!), for: characteristicDegree, type: .withResponse)
         }
     }
     

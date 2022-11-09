@@ -100,7 +100,7 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         //update TurnDegrees
         updateBearing()
      
-        myMainMotor.turnMotor()
+        //myMainMotor.turnMotor()
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -150,7 +150,7 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         if (isCamera) {
             centerMap()
             
-            getLocationTimer  = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(getDataFromCloud),userInfo: nil, repeats: true)
+            getLocationTimer  = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(getDataFromCloud),userInfo: nil, repeats: true)
             modeIsCamera = true
         }
         else {
@@ -202,20 +202,28 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         let x = sin(diffLong) * cos(lat2)
         let y = cos(lat1) * sin(lat2) - (sin(lat1) * cos(lat2) * cos(diffLong))
         
-//        var initial_bearing = atan2(x, y)
-//        initial_bearing = initial_bearing.inDegrees()
         DispatchQueue.main.async {
             self.bearingSurfer = (atan2(x,y).inDegrees() + 360).truncatingRemainder(dividingBy: 360)
-            //bearingSurfer = (initial_bearing + 360).truncatingRemainder(dividingBy: 360)
             self.turnDegrees =  self.bearingSurfer - self.trueNorth
+            //shortest route
+            if self.turnDegrees > 180 {
+                self.turnDegrees = self.turnDegrees - 360
+            }
+            
+            if self.turnDegrees < -180 {
+                self.turnDegrees = self.turnDegrees + 360
+            }
+
+            
+            myMainMotor.turnMotor(inTurnDegrees: self.turnDegrees)
         }
     }
 
     
-    func getTurnDegrees() -> CGFloat {
-        print("getting turnDegrees \(turnDegrees)")
-        return turnDegrees
-    }
+//    func getTurnDegrees() -> CGFloat {
+//        print("getting turnDegrees \(turnDegrees)")
+//        return turnDegrees
+//    }
     
     
     
