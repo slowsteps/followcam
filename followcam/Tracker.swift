@@ -25,6 +25,8 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     public var surferLongitude = 0.0
     @Published var speed = 0.0
     @Published var course = 0.0
+    private var surferSpeed = 0.0
+    private var surferCourse = 0.0
     @Published var serverResult = "no server result"
     @Published var locationAuthorized = false
     private let locationManager : CLLocationManager
@@ -35,6 +37,7 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 51.507222, longitude: -0.1275), span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5))
     private var simplecounter = 0
     private var modeIsCamera = false
+    private var isPredictingLocation = false
     
     
     override init() {
@@ -76,7 +79,7 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func getLocation() async throws {
         
-        print("getLocation cloud download")
+        //print("getLocation cloud download")
         
         let url = URL(string: "https://surftracker-365018.ew.r.appspot.com/getlocation")!
         let urlRequest = URLRequest(url: url)
@@ -87,6 +90,23 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         
         surferLatitude = decodedJson.latitude
         surferLongitude = decodedJson.longitude
+        surferSpeed = decodedJson.speed
+        surferCourse = decodedJson.course
+        
+        //TODO is this in the right spot?
+        if isPredictingLocation {
+            let curLocation = CLLocation(latitude: surferLatitude, longitude: surferLongitude)
+            //TODO make this 2 a variable
+            print("speed: \(surferSpeed)")
+            print("course: \(surferCourse)")
+            let distance = CLLocationDistance(surferSpeed * 2)
+            let direction = CLLocationDirection(surferCourse)
+            print(distance)
+            let predictedLocation = curLocation.destinationBy(distance, direction: direction)
+            surferLatitude = predictedLocation.coordinate.latitude
+            surferLongitude = predictedLocation.coordinate.longitude
+        }
+        
         print(decodedJson.timesend)
         
         DispatchQueue.main.async {
@@ -109,6 +129,9 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         self.myLongitude = locations.first?.coordinate.longitude ?? 0
         speed = locations.first?.speed ?? 0
         course = locations.first?.course ?? 0
+        
+   
+        
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
@@ -133,12 +156,18 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     func toggleLocationSending( _ isSurfer : Bool) {
         print("toggle setting")
         if (isSurfer) {
-            shareLocationTimer  = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(sendLocationToServer),userInfo: nil, repeats: true)
+            shareLocationTimer  = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(sendLocationToServer),userInfo: nil, repeats: true)
         }
         else {
             shareLocationTimer.invalidate()
         }
     }
+
+    func toggleIsPredicting( _ isPredicting : Bool) {
+        print("toggle predicting location: \(isPredicting)")
+        isPredictingLocation = isPredicting
+    }
+
     
     func centerMap() {
         
@@ -146,11 +175,11 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func toggleLocationGetting( _ isCamera : Bool) {
-        print("toggle getting")
+        print("toggle getting location")
         if (isCamera) {
             centerMap()
             
-            getLocationTimer  = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(getDataFromCloud),userInfo: nil, repeats: true)
+            getLocationTimer  = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(getDataFromCloud),userInfo: nil, repeats: true)
             modeIsCamera = true
         }
         else {
@@ -193,7 +222,7 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     
     //get angle from camera to surfer measure as degree from north
     func updateBearing() {
-        print("in update bearing")
+        //print("in update bearing")
         let lat1 = myLatitude.inRadians()
         let lat2 = surferLatitude.inRadians()
 
@@ -204,7 +233,7 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
         
         DispatchQueue.main.async {
             self.bearingSurfer = (atan2(x,y).inDegrees() + 360).truncatingRemainder(dividingBy: 360)
-            self.turnDegrees =  self.bearingSurfer - self.trueNorth
+            self.turnDegrees =  self.bearingSurfer - self.trueNorth + 270
             //shortest route
             if self.turnDegrees > 180 {
                 self.turnDegrees = self.turnDegrees - 360
@@ -220,13 +249,35 @@ class Tracker : NSObject, ObservableObject, CLLocationManagerDelegate {
     }
 
     
-//    func getTurnDegrees() -> CGFloat {
-//        print("getting turnDegrees \(turnDegrees)")
-//        return turnDegrees
-//    }
     
     
     
     
 }
 
+// Calculate destination location based on origin location, distance (meters) and direction (degrees from north).
+// Playing: myOriginLocation.destinationBy(distance: 5.0, direction: 45.0)
+// http://www.geomidpoint.com/destination/calculation.html (Spherical earth model)
+extension CLLocation {
+    func destinationBy(_ distance: CLLocationDistance, direction: CLLocationDirection) -> CLLocation {
+        let earthRadius     = 6372.7976
+        let angularDistance = (distance / 1000) / earthRadius
+        let originLatRad    = self.coordinate.latitude * (.pi / 180)
+        let originLngRad    = self.coordinate.longitude * (.pi / 180)
+        let directionRad    = direction * (.pi / 180)
+        
+        let destinationLatRad = asin(
+            sin(originLatRad) * cos(angularDistance) +
+                cos(originLatRad) * sin(angularDistance) *
+                cos(directionRad))
+        
+        let destinationLngRad = originLngRad + atan2(
+            sin(directionRad) * sin(angularDistance) * cos(originLatRad),
+            cos(angularDistance) - sin(originLatRad) * sin(destinationLatRad))
+        
+        let destinationLat: CLLocationDegrees = destinationLatRad * (180 / .pi)
+        let destinationLng: CLLocationDegrees = destinationLngRad * (180 / .pi)
+        
+        return CLLocation(latitude: destinationLat, longitude: destinationLng)
+    }
+}

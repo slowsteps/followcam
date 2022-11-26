@@ -128,7 +128,8 @@ class PreviewView: UIView {
         let session = AVCaptureSession()
         session.beginConfiguration()
         
-        let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera,for: .video, position: .front)
+//        let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera,for: .video, position: .front)
+        let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera,for: .video, position: .back)
         guard videoDevice != nil, let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice!), session.canAddInput(videoDeviceInput) else {print("no camera")
             return
         }
